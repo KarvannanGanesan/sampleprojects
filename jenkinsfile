@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    environment {
+        // Define any environment variables here if needed
+        JAVA_HOME = "C:\\Program Files\\Java\\jdk-17" // Replace with the correct path
+        MAVEN_HOME = "C:\Program Files\Maven\apache-maven-3.8.8" // Replace with the correct path
+        PATH = "${env.JAVA_HOME}\\bin;${env.MAVEN_HOME}\\bin;${env.PATH}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the repository
+                git url: 'https://your-repository-url.git', branch: 'main'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                // Run the build using Maven
+                bat 'mvn clean install'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                // Run the tests
+                bat 'mvn test'
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                // Deploy the application
+                // This can be a script to deploy to a server or a cloud service
+                bat 'deploy.bat'
+            }
+        }
+    }
+
+    post {
+        success {
+            // Actions to take if the pipeline succeeds
+            echo 'Pipeline completed successfully!'
+        }
+        
+        failure {
+            // Actions to take if the pipeline fails
+            echo 'Pipeline failed!'
+        }
+    }
+}
