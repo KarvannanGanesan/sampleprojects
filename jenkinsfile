@@ -1,53 +1,33 @@
 pipeline {
-    agent any
-
-    environment {
-        // Define any environment variables here if needed
-        JAVA_HOME = "C:\\Program Files\\Java\\jdk-17" // Replace with the correct path
-        MAVEN_HOME = "C:\Program Files\Maven\apache-maven-3.8.8" // Replace with the correct path
-        PATH = "${env.JAVA_HOME}\\bin;${env.MAVEN_HOME}\\bin;${env.PATH}"
+  agent any
+  tools {
+    maven 'Maven'
+  }
+  stages {
+    stage ('Cleanup') {
+      steps {
+        // Clean workspace before checkout
+      deleteDir()
+      }
     }
-
-    stages {
-        stage('Checkout') {
+    stage('Checkout') {
             steps {
-                // Checkout the code from the repository
-                git url: 'https://your-repository-url.git', branch: 'main'
+                checkout scm
             }
         }
-        
-        stage('Build') {
-            steps {
-                // Run the build using Maven
-                bat 'mvn clean install'
-            }
-        }
-        
-        stage('Test') {
-            steps {
-                // Run the tests
-                bat 'mvn test'
-            }
-        }
-        
-        stage('Deploy') {
-            steps {
-                // Deploy the application
-                // This can be a script to deploy to a server or a cloud service
-                bat 'deploy.bat'
-            }
-        }
+    stage ('Build') {
+      steps {
+        bat 'mvn clean -Dmaven.test.skip package'
+      }
     }
-
-    post {
-        success {
-            // Actions to take if the pipeline succeeds
-            echo 'Pipeline completed successfully!'
+    stage ('Run') {
+      steps {
+        script {
+          def jarFilePath = 'C:/ProgramData/Jenkins/.jenkins/workspace/demo/demoservice/target/demoservice-0.0.1-SNAPSHOT.jar'
+          def batchScript = "cmd /c \"java -jar ${jarFilePath}\""
+          bat label: 'Run JAR in Background', script: batchScript
         }
-        
-        failure {
-            // Actions to take if the pipeline fails
-            echo 'Pipeline failed!'
-        }
+      }
     }
+  }
 }
